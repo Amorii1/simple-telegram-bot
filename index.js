@@ -1,19 +1,36 @@
+require("dotenv").config();
 const express = require("express");
-const path = require("path");
-const logger = require("./Middleware/logger");
+const bodyParser = require("body-parser");
+const axios = require("axios");
+const { TOKEN, SERVER_URL } = process.env;
+const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
+const URI = `/webhook/${TOKEN}`;
+const WEBHOOK_URL = SERVER_URL + URI;
 
 const app = express();
+app.use(bodyParser.json());
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const init = async () => {
+  const res = await axios.get(`${TELEGRAM_API}/setWebhook?url=${WEBHOOK_URL}`);
+  console.log(res.data);
+};
 
-// app.get("/", (req, res) => {
-//   res.sendFile(path.join(__dirname, "public", "index.html"));
-// });
-app.use(express.static(path.join(__dirname, "public")));
+app.post(URI, async (req, res) => {
+  console.log(req.body);
 
-/*Members Api Routes*/
-app.use("/api/members", require("./routes/api/members"));
+  const chatId = req.body.message.chat.id;
+  const text = req.body.message.text;
+
+  await axios.post(`${TELEGRAM_API}/sendMessage`, {
+    chat_id: chatId,
+    text,
+  });
+
+  return res.send();
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server started running on port ${PORT}`));
+app.listen(PORT, async () => {
+  console.log(`App running on port ${PORT}`);
+  await init();
+});
