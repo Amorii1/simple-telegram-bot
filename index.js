@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const axios = require("axios");
+const { json } = require("body-parser");
 const { TOKEN, SERVER_URL } = process.env;
 const TELEGRAM_API = `https://api.telegram.org/bot${TOKEN}`;
 const URI = `/webhook/${TOKEN}`;
@@ -17,16 +18,15 @@ const init = async () => {
 
 app.post(URI, async (req, res) => {
   console.log(req.body);
-
-  const chatId = req.body.message.chat.id;
-  const text = req.body.message.text;
-
-  await axios.post(`${TELEGRAM_API}/sendMessage`, {
-    chat_id: chatId,
-    text,
-  });
-
-  return res.send();
+  if (req.body.message.text) {
+    const chatId = req.body.message.chat.id;
+    const text = req.body.message.text;
+    await axios.post(`${TELEGRAM_API}/sendMessage`, {
+      chat_id: chatId,
+      text,
+    });
+    return res.send();
+  } else return res.send(json({ msg: "no text found" }));
 });
 
 const PORT = process.env.PORT || 5000;
