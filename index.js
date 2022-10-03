@@ -18,15 +18,13 @@ const init = async () => {
 
 app.post(URI, async (req, res) => {
   console.log(req.body);
-  if (req.body.message.text) {
-    const chatId = req.body.message.chat.id;
-    const text = req.body.message.text;
-    await axios.post(`${TELEGRAM_API}/sendMessage`, {
-      chat_id: chatId,
-      text,
-    });
-    return res.send();
-  } else return res.send(json({ msg: "no text found" }));
+  const chatId = req.body.message.chat.id;
+  const text = req.body.message.text;
+  await axios.post(`${TELEGRAM_API}/sendMessage`, {
+    chat_id: chatId,
+    text,
+  });
+  return res.send();
 });
 
 const PORT = process.env.PORT || 5000;
